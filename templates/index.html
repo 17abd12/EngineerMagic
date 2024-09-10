@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Engineer Magic</title>
+    
+    <style>
+
+    </style>
+    
+    
+    <!-- ABD CODE-->
+     <!-- importing necessary stuff -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/STLLoader.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    
+        
+    <!-- ABD CODE-->
+</head>
+<body> 
+    <div class="container">
+        <div class="left">
+            <h1>Magic Engineering AI</h1>
+            <p>Converting Imagination into CAD</p>
+            
+            <hr>
+
+            <h2>Visual Rendering</h2>
+            <p>Here are the parameters of the desired Model.</p>
+            <hr/>
+
+            <form id="dynamic-form" style="margin: 20px;height: 300px; overflow-y: auto;" method="post" enctype="multipart/form-data" class="form-group">
+            </form>
+
+            <h2>How to Use</h2>
+            <p>Type whatever you want into the word generator, and copy paste the result into OpenSCAD.</p>
+
+            <hr>
+            
+            <h2>Our Vision</h2>
+            <p>We want to make CAD as simple as saying what you want, or taking a photo of what you need.</p>
+        </div>
+
+
+        <div class="right">
+            <div id="model-viewer" style="border: 2px solid black;position: relative;" ></div>
+            <form id="main-form" method="post"  enctype="multipart/form-data">
+                <textarea name="prompt" placeholder="Make a ball bearing"></textarea>
+                <button type="submit">Generate!</button>
+                <button type="button" id="download-scad" disabled="True" style="width: fit-content; height: fit-content; margin:auto;">Download SCAD File</button>
+                <button type="button" id="download-stl" disabled="True" style="width: fit-content; height: fit-content; margin:auto;">Download STL File</button>
+                <input type="file" name="image" accept="image/*">
+            </form>
+            <div class="lds-dual-ring" id="loadingSpinner" style="display: none;"></div>
+        </div>
+    </div>
+    
+    
+    
+    <!-- ABD CODE-->
+    <!-- Creating a form for parameters -->
+    <div style="display: flex; justify-content: center;  height:auto; margin-bottom: 20%;">
+        <div class = "left" style="padding-bottom: 10%;">
+            <form id="dynamic-form" style="margin: 20px;" method="post" enctype="multipart/form-data" class="form-group">
+            </form>   
+        </div>
+        <div class="right" >
+            <div id="editor">// generated OpenSCAD code will appear here</div>
+        </div>
+        
+    </div>
+    
+    
+    
+    
+    <script>
+        function showSpinner() 
+        {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+ 
+         function processingComplete() 
+        {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        let identifier = 0;
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xedf2f4);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        camera.position.set(0, 0, 100);
+        const renderer = new THREE.WebGLRenderer({antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio); 
+        renderer.setSize(window.innerWidth * 0.6, window.innerHeight * 0.7);
+        document.body.appendChild(renderer.domElement);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Create and position text sprite
+
+
+
+
+
+
+        window.addEventListener('resize', () => 
+        {
+            renderer.setSize(window.innerWidth * 0.6, window.innerHeight * 0.7);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        document.getElementById('model-viewer').appendChild(renderer.domElement);
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableZoom = true;
+        controls.zoomSpeed = 1.0; 
+
+        const loader = new THREE.STLLoader();
+        let zoomSpeed = 0.05; // Speed of zooming
+        let targetDistance = 50; // Target distance from the scene
+
+// Function to smoothly zoom
+        function smoothZoom() 
+        {
+            const currentDistance = camera.position.distanceTo(new THREE.Vector3(0, 0, 0));
+            const direction = new THREE.Vector3().subVectors(camera.position, new THREE.Vector3(0, 0, 0)).normalize();
+            const newDistance = THREE.MathUtils.lerp(currentDistance, targetDistance, zoomSpeed);
+            camera.updateProjectionMatrix();
+            // camera.position.copy(new THREE.Vector3().addVectors(new THREE.Vector3(0, 0, 0), direction.multiplyScalar(newDistance)));
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+        }
+
+        function loadModel(identifier) 
+        {
+            scene.clear();
+            const url = `static/model/model${identifier}.stl`;
+            const ambientLight = new THREE.AmbientLight(0xa2d2ff);
+            scene.add(ambientLight);
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight1.position.set(1, 1, 1).normalize();
+            directionalLight1.castShadow = true;
+            directionalLight1.shadow.mapSize.width = 2048;  // Set shadow map resolution width
+            directionalLight1.shadow.mapSize.height = 2048; // Set shadow map resolution height
+            directionalLight1.shadow.camera.near = 0.5;  // Adjust near clipping plane
+            directionalLight1.shadow.camera.far = 500; 
+
+
+           scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight2.position.set(-1, -1, -1).normalize();
+            directionalLight2.castShadow = true;
+            directionalLight2.shadow.mapSize.width = 2048;  // Set shadow map resolution width
+            directionalLight2.shadow.mapSize.height = 2048; // Set shadow map resolution height
+            directionalLight2.shadow.camera.near = 0.5;  // Adjust near clipping plane
+            directionalLight2.shadow.camera.far = 500; 
+
+
+           scene.add(directionalLight2);
+        
+            loader.load(url, function (geometry) 
+            {
+                const material = new THREE.MeshStandardMaterial({ color: 0x1f78b4, roughness: 0.0,  // Set roughness to 0 for a smooth surface
+                    metalness: 0.0 });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                mesh.rotation.x = -Math.PI / 2;
+                const box = new THREE.Box3().setFromObject(mesh);
+                const size = box.getSize(new THREE.Vector3()).length();
+                const center = box.getCenter(new THREE.Vector3());
+                
+                // mesh.position.sub(center)
+        
+
+                const gridSize = 5000;
+                const divisions = 200;
+                const gridHelper = new THREE.GridHelper(gridSize, divisions, 0xaaaaaa, 0xaaaaaa);
+                gridHelper.material.transparent = true;
+                gridHelper.position.y = 0;
+                scene.add(gridHelper);
+
+
+                scene.add(mesh);
+
+                camera.position.set(size, size, size);
+                camera.lookAt(center);
+                targetDistance = size * 2; // Adjust the target distance based on the model size
+
+
+            }, undefined, function (error) 
+            {
+                console.error('An error occurred while loading the STL file:', error);
+            });
+        }
+
+        function animate()
+        {
+            requestAnimationFrame(animate);
+            smoothZoom(); // Call smoothZoom to update the camera position
+            renderer.render(scene, camera);
+            controls.update();
+        }
+        animate();
+
+        // for downloadingfile
+            document.getElementById('download-scad').addEventListener('click', function()
+            {
+            var downloadUrl = '/download?identifier=' + encodeURIComponent(identifier);
+            window.location.href = downloadUrl;
+            });
+            
+            document.getElementById('download-stl').addEventListener('click', function()
+            {
+            var downloadUrl = '/download-stl?identifier=' + encodeURIComponent(identifier);
+            window.location.href = downloadUrl;
+            });
+
+            // for downloadingfile
+
+
+                $(document).ready(function(){
+
+                    $('#main-form').on('keydown', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();  // Prevent the default action (like adding a newline in textarea)
+                    showSpinner();          // Show the spinner
+                    $(this).submit();       // Submit the form
+                }
+            });
+
+
+
+                    $('#main-form').submit(function(event)
+                    {
+                        showSpinner();
+                        event.preventDefault(); // Prevent the form from submitting via the browser
+                        var formData = new FormData(this); // Use FormData to capture file and text
+                        $.ajax({
+                            url: '/',
+                            type: 'POST',
+                            data: formData,
+                            processData: false,  // tell jQuery not to process the data
+                            contentType: false,  // tell jQuery not to set contentType
+                            success: function(data) {
+                                console.log("success")
+                                editor.setValue(data.processed_text, 1);
+                                identifier = data.identifier;
+                                console.log(identifier,data.identifier);
+                                currentIdentifier = data.identifier;
+                                loadModel(currentIdentifier)
+                                $('#dynamic-form').empty();
+                            $.each(data.parameters, function(param, value) {
+                                $('<label>').attr('for', param).text(param + ':').appendTo('#dynamic-form');
+                                $('<input>').attr({
+                                    type: 'number',
+                                    name: param,
+                                    value: value
+                                }).appendTo('#dynamic-form');
+                                $('<br>').appendTo('#dynamic-form');
+                            });
+
+                            // Append submit button
+                            $('<button>').attr({
+                                type: 'submit'
+                            }).text('Update Model').appendTo('#dynamic-form');
+
+                            $('#download-scad').prop('disabled', false);
+                            $('#download-stl').prop('disabled', false);
+                            
+                            // $('#download').css("background-color:#4a90e2;")
+                            
+                                processingComplete();
+                            }
+                            ,
+                            error: function(jqXHR) 
+                            {
+                            $('#download-scad').prop('disabled', true);
+                            $('#download-stl').prop('disabled', true);
+                            console.log("Error");
+                            alert("conversion of such a  complex structure is not possible because of errors in gpt Code please try again");
+                            processingComplete();
+                            
+                            }
+                            
+                        });
+                    });
+
+
+
+                    $('#dynamic-form').on('keydown', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();  // Prevent the default action (like adding a newline in textarea)
+                    showSpinner();          // Show the spinner
+                    $(this).submit();       // Submit the form
+                }
+            });
+
+                    $('#dynamic-form').submit(function(event){
+                        showSpinner();
+                        event.preventDefault(); // Prevent the form from submitting via the browser
+                        var parameters = {};
+                        var inputs = document.querySelectorAll('#dynamic-form input');
+                        Array.from(inputs).forEach(function(input) {
+                            var name = input.getAttribute('name');
+                            var value = input.value;
+
+                            // Debugging
+                            console.log(name, value, "2");
+                            console.log("Here");
+
+                            if (name) { // Ensure the name attribute exists
+                                parameters[name] = value;
+                            }
+                        });
+                        let data = {"parameters":parameters,"id":identifier};
+
+
+                        $.ajax({
+                            url: '/update',
+                            type: 'POST',
+                            contentType: 'application/json',  // Set content type to JSON
+                            data: JSON.stringify(data),  
+                            success: function(data) {
+                        
+                                loadModel(identifier);
+                                processingComplete();
+                            },
+                            error: function(jqXHR) {
+                            console.log("Error");
+                            alert("Due to invalid parameters there is an error please refresh page or try again");
+                            processingComplete();
+                            }
+                    });  
+            });
+
+
+                });
+            </script>
+
+
+    <!-- ABD CODE-->
+
+
+    <script src="/static/js/src-min/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.setReadOnly(true);
+        editor.setShowPrintMargin(false);
+        editor.session.setMode("ace/mode/scad");
+        document.getElementById('editor').style.fontSize='18px';
+        editor.renderer.setScrollMargin(10, 10);
+        editor.setOptions({
+            autoScrollEditorIntoView: true
+        });
+    </script>
+</body>
+</html>
