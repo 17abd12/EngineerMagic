@@ -1,8 +1,12 @@
 import base64
 import requests
-import json
 import os
 import subprocess
+from dotenv import load_dotenv
+import os
+
+# Load .env file
+load_dotenv()
 
 def encode_image_to_base64(image_path):
     """Convert an image file to a base64 string."""
@@ -10,7 +14,7 @@ def encode_image_to_base64(image_path):
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 def generate_chat_completion(prompt, image_path=None):
-    api_key = 'YOUR_API_KEY_HERE'
+    api_key = os.getenv("API_KEY")
     # api_key = "you"
     url = "https://api.openai.com/v1/chat/completions"
 
