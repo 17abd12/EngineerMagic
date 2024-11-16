@@ -152,7 +152,7 @@
         function loadModel(identifier) 
         {
             scene.clear();
-            const url = `static/model/model${identifier}.stl`;
+            const url = `tmp/model/model${identifier}.stl`;
             const ambientLight = new THREE.AmbientLight(0xa2d2ff);
             scene.add(ambientLight);
             const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.5);
