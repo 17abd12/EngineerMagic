@@ -16,6 +16,10 @@ def encode_image_to_base64(image_path):
 def generate_chat_completion(prompt, image_path=None):
     api_key = os.getenv("API_KEY")
     # api_key = "you"
+    api_key = os.getenv("API_KEY")
+    if not api_key:
+        raise ValueError("API_KEY environment variable not set.")
+    
     url = "https://api.openai.com/v1/chat/completions"
 
     headers = {
