@@ -1,32 +1,37 @@
-# Use a Python base image from Docker Hub
+# Use Python slim image as base
 FROM python:3.12-slim
 
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
 
-# Install necessary system dependencies for OpenSCAD and your app
+# Install system dependencies and utilities
 RUN apt-get update && \
     apt-get install -y \
-    software-properties-common \
+    build-essential \
     wget \
     libgtk2.0-0 \
     libcanberra-gtk-module \
     libglu1-mesa \
+    cmake \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install OpenSCAD Nightly (change URL to the latest version)
-RUN wget https://github.com/openscad/openscad/releases/download/nightly/OpenSCAD-nightly-2024.0-rc-1-x86_64-linux.tar.xz && \
-    tar -xf OpenSCAD-nightly-2024.0-rc-1-x86_64-linux.tar.xz && \
-    mv OpenSCAD-nightly-2024.0-rc-1-x86_64-linux /usr/local/bin/openscad
+# Download and install OpenSCAD from source
+RUN wget https://github.com/openscad/openscad/releases/download/openscad-2021.01/openscad-2021.01.src.tar.gz && \
+    tar -xvzf openscad-2021.01.src.tar.gz && \
+    cd openscad-2021.01 && \
+    cmake . && \
+    make && \
+    make install
 
-# Copy the application code to the container
+# Copy application code to the container
 COPY . /app
 
-# Install Python dependencies (make sure you have a requirements.txt in the project)
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+RUN pip install -r requirements.txt
 
-# Expose the port that Flask will run on
-EXPOSE 5000
+# Set environment variables (if necessary for your app)
+ENV PATH="/usr/local/bin:${PATH}"
 
-# Command to run the application
+# Run your application (adjust this based on your app's entry point)
 CMD ["python", "app.py"]
