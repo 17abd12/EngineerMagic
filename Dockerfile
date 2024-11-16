@@ -21,7 +21,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and extract OpenSCAD source
-RUN wget https://github.com/openscad/openscad/releases/download/openscad-2021.01/openscad-2021.01.src.tar.gz && \
+RUN wget --timeout=120 --tries=3 --continue  https://github.com/openscad/openscad/releases/download/openscad-2021.01/openscad-2021.01.src.tar.gz && \
     tar -xvzf openscad-2021.01.src.tar.gz && \
     cd openscad-2021.01 && \
     mkdir build && \
