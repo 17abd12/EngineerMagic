@@ -9,29 +9,38 @@ RUN apt-get update && \
     apt-get install -y \
     build-essential \
     wget \
+    cmake \
+    git \
     libgtk2.0-0 \
     libcanberra-gtk-module \
     libglu1-mesa \
-    cmake \
-    git \
+    libpng-dev \
+    libcairo2-dev \
+    libboost-all-dev \
+    qt5-qmake qtbase5-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install OpenSCAD from source
+# Download and extract OpenSCAD source
 RUN wget https://github.com/openscad/openscad/releases/download/openscad-2021.01/openscad-2021.01.src.tar.gz && \
     tar -xvzf openscad-2021.01.src.tar.gz && \
     cd openscad-2021.01 && \
-    cmake . && \
-    make && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make -j$(nproc) && \
     make install
 
-# Copy application code to the container
+# Copy your application code into the Docker container
 COPY . /app
 
-# Install Python dependencies
+# Install Python dependencies from requirements.txt
 RUN pip install -r requirements.txt
 
-# Set environment variables (if necessary for your app)
+# Set environment variable for OpenSCAD binary
 ENV PATH="/usr/local/bin:${PATH}"
 
-# Run your application (adjust this based on your app's entry point)
+# Expose the port your app runs on
+EXPOSE 5000
+
+# Command to run your Flask app
 CMD ["python", "app.py"]
