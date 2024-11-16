@@ -38,9 +38,9 @@ def home():
 
         processed_text = process_text_and_image(text_value, image_file)
         no = random.randint(1,1000)
-        model_directory = 'tmp'
+        model_directory = '/tmp'
         os.makedirs(model_directory, exist_ok=True)
-        scad_path = f'tmp/model{no}.scad'
+        scad_path = f'/tmp/model{no}.scad'
         with open(scad_path,"w") as file:
             file.write(processed_text)
         print("generating File")
@@ -120,8 +120,8 @@ def update_parameters(new_params,identifier):
             file.write(line)
 
 def generate_stl(identifier,turn = 0):
-    SCAD_FILE = f'tmp/model{identifier}.scad'
-    STL_FILE = f'tmp/model{identifier}.stl'
+    SCAD_FILE = f'/tmp/model{identifier}.scad'
+    STL_FILE = f'/tmp/model{identifier}.stl'
     if not os.path.isfile(SCAD_FILE):
         abort(404, description="Model not found")
 
