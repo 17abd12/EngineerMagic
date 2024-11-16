@@ -13,7 +13,8 @@ import time
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'  # Ensure this directory exists
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB limit
-OPENSCAD_EXECUTABLE_PATH = 'OpenSCAD/OpenSCAD (Nightly)/openscad.exe'
+OPENSCAD_EXECUTABLE_PATH = '/usr/local/bin/openscad'
+
 app.secret_key = '12345678'
 
 def allowed_file(filename):
