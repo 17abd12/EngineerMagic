@@ -9,6 +9,7 @@ RUN apt-get update && \
     apt-get install -y \
     build-essential \
     wget \
+    tar \
     cmake \
     git \
     libgtk2.0-0 \
@@ -20,9 +21,12 @@ RUN apt-get update && \
     qt5-qmake qtbase5-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and extract OpenSCAD source
-RUN wget --timeout=120 --tries=3 --continue  https://github.com/openscad/openscad/releases/download/openscad-2021.01/openscad-2021.01.src.tar.gz && \
+# Download and extract OpenSCAD source with debugging
+RUN set -x && \
+    wget --timeout=120 --tries=3 --continue https://github.com/openscad/openscad/releases/download/openscad-2021.01/openscad-2021.01.src.tar.gz && \
+    ls -al && \
     tar -xvzf openscad-2021.01.src.tar.gz && \
+    ls -al openscad-2021.01 && \
     cd openscad-2021.01 && \
     mkdir build && \
     cd build && \
